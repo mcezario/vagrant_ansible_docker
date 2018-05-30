@@ -1,0 +1,39 @@
+---
+
+- hosts: all
+  become: yes
+  gather_facts: no
+  pre_tasks:
+    - name: 'install python2'
+      raw: sudo apt-get -y install python-simplejson
+  tasks:
+    - name: Updates apt cache
+      action: apt update_cache=true
+
+    - name: Update repositories cache and install packages
+      apt: name="{{ item }}" state=installed
+      with_items:
+         - apt-transport-https
+         - ca-certificates
+         - curl
+         - software-properties-common
+         - python-software-properties
+         - systemd
+
+    - name: Add Docker’s official GPG key
+      shell: curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+
+    - name: Add Docker’s repository
+      shell: sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
+
+    #- name: Remove lxcfs
+    #  shell: sudo service lxcfs stop && sudo apt-get remove -y -q lxc-common lxcfs lxd lxd-client
+
+    - name: Updates apt cache
+      shell: sudo apt-get update -q
+
+    - name: Install docker
+      shell: sudo apt-get install -y -q docker-ce=17.03.0~ce-0~ubuntu-trusty #apt-get install -y -q docker-ce=17.03
+
+    - name: Create hello-world container
+      shell: sudo docker run hello-world
